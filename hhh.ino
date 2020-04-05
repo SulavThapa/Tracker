@@ -65,6 +65,7 @@ void loop()
           lng_str = String(longitude , 6); //longitude location is stored in a string
           Serial.println(lat_str);
           Serial.println(lng_str);
+          sendData();
         }
         else{
           lat_str=("28.634102");
@@ -110,7 +111,7 @@ void loop()
 //  String payload = http.getString();  //Get the response payload
 //  Serial.println(payload);    //Print request response payload
 //  http.end();
-  sendData();
+  
 }
 
 void sendData(){
@@ -121,7 +122,6 @@ void sendData(){
     postStr += String(lat_str);
     postStr +="&field2=";
     postStr += String(lng_str);
-    postStr += "\r\n\r\n";
  
     client.print("POST /update HTTP/1.1\n");
     client.print("Host: api.thingspeak.com\n");
