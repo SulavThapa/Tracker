@@ -9,10 +9,13 @@ TinyGPSPlus gps;  // The TinyGPS++ object
 SoftwareSerial ss(4, 5); // The serial connection to the GPS device
 const char* ssid = "Sulav21Silva"; //ssid of your wifi
 const char* password = "sulavthapa"; //password of your wifi
+const char* serverthink = "api.thingspeak.com";
+String apiKey = "611SSKNHLTOSL0FL";
 float latitude , longitude;
 int  val;
 String  lat_str , lng_str ;
 int pm;
+WiFiClient client;
 WiFiServer server(80);
 
 bool res_status = false;
@@ -100,13 +103,44 @@ void loop()
   s += "</body> </html>";
 
   client.print(s); // all the values are send to the webpage
-  HTTPClient http;
-  http.begin("http://192.168.43.154:5000/gpsinfo/"+(String)lat_str+"/"+(String)lng_str);
-  http.addHeader("Content-Type", "text/plain");
-  http.GET();   //Send the request
-  String payload = http.getString();  //Get the response payload
-  Serial.println(payload);    //Print request response payload
-  http.end();
-
-  delay(100);
+//  HTTPClient http;
+//  http.begin("http://192.168.43.154:5000/gpsinfo/"+(String)lat_str+"/"+(String)lng_str);
+//  http.addHeader("Content-Type", "text/plain");
+//  http.GET();   //Send the request
+//  String payload = http.getString();  //Get the response payload
+//  Serial.println(payload);    //Print request response payload
+//  http.end();
+  sendData();
 }
+
+void sendData(){
+   if (client.connect(serverthink,80))   //   "184.106.153.149" or api.thingspeak.com
+     {  
+    String postStr = apiKey;
+    postStr +="&field1=";
+    postStr += String(lat_str);
+    postStr +="&field2=";
+    postStr += String(lng_str);
+    postStr += "\r\n\r\n";
+ 
+    client.print("POST /update HTTP/1.1\n");
+    client.print("Host: api.thingspeak.com\n");
+    client.print("Connection: close\n");
+    client.print("X-THINGSPEAKAPIKEY: "+apiKey+"\n");
+    client.print("Content-Type: application/x-www-form-urlencoded\n");
+    client.print("Content-Length: ");
+    client.print(postStr.length());
+    client.print("\n\n");
+    client.print(postStr);
+ 
+    Serial.print("Latitude: ");
+    Serial.print(lat_str);
+    Serial.print("Longitude: ");
+    Serial.print(lng_str);
+    Serial.println("%. Send to Thingspeak.");
+
+  delay(1000);                     
+
+      }
+  
+  }
